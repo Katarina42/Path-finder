@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ public class PathFinder
     public bool FindPath()
     {
         Point enemyPoint = FindShortestPath();
+      
         if (enemyPoint.x == -1)
         {
             Debug.Log("There is no path");
@@ -52,6 +54,7 @@ public class PathFinder
     }
     private Point FindShortestPath()
     {
+        var st = System.Diagnostics.Stopwatch.StartNew();
         int x = GameManager.Instance.player.x;
         int y = GameManager.Instance.player.y;
 
@@ -68,8 +71,11 @@ public class PathFinder
             y = currentPoint.y;
 
             if (currentPoint.x == GameManager.Instance.enemy.x && currentPoint.y == GameManager.Instance.enemy.y)
+            {
+                st.Stop();
+                timeSpent = st.ElapsedMilliseconds;
                 return currentPoint;
-
+            }
             //left
             if (ValidPoint(x - 1, y) && !gridMatrix[x - 1, y].visited)
             {

@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
 
     #region Game data
 
-    private uint level;
+    private uint level=0;
     public uint Level
     {
         get { return level; }
@@ -75,7 +75,6 @@ public class GameManager : MonoBehaviour
         player = new Point(0, 4);
         playerCurrent = new Point(0, 4); 
 
-        level = 0;
         DataScreens.levelsData = new List<LevelData>();
         SceneManager.sceneLoaded += LevelLoaded;
     }
@@ -126,7 +125,9 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        SetBlocks();
+        Debug.Log("Level " + level);
+        if(level>1)
+            SetBlocks();
     }
 
     private void SetBlocks()
@@ -171,22 +172,26 @@ public class GameManager : MonoBehaviour
 
     public void OnPlay()
     {
-        if (playerCurrent.x == enemy.x && playerCurrent.y == enemy.y) ;
+        if (playerCurrent.x == enemy.x && playerCurrent.y == enemy.y)
             SceneManager.LoadScene("Grid");
     }
 
     public void OnRun()
     {
+       
         if (pathFinder.FindPath())
         {
             runBtn.SetActive(false);
-            DataScreens.levelsData.Add(new LevelData(pathFinder.algorithamName, pathFinder.tilesChecked, pathFinder.timeSpent));
             MovePlayer();
         }
         else
         {
-            SceneManager.LoadScene("Menu");
-        } 
+             SceneManager.LoadScene("Menu");
+        }
+
+        DataScreens.levelsData.Add(new LevelData(pathFinder.algorithamName, pathFinder.tilesChecked, pathFinder.timeSpent));
+
+
     }
 
     #endregion

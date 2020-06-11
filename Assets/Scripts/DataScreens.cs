@@ -35,7 +35,7 @@ public class DataScreens : MonoBehaviour
 
     private  string PrintLevelData(int level)
     {
-        return "" + levelsData[level].PrintData();
+        return "" + levelsData[level-1].PrintData();
     }
 }
 
@@ -54,6 +54,6 @@ public struct LevelData
 
     public string PrintData()
     {
-        return this.algorithamName + ":\nNumber of tiles checked:" + tilesChecked + "\nTime:" + timeSpent;
+        return this.algorithamName + ":\nNumber of tiles checked:" + tilesChecked + "\nTime:" + timeSpent+"ms";
     }
 }
