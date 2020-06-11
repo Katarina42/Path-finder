@@ -25,7 +25,6 @@ public class UiManager : MonoBehaviour
     {
         ParseTextInput();
         SceneManager.LoadScene("Grid");
-        GameManager.Instance.InitializeGame();
     }
 
     private void ParseTextInput()

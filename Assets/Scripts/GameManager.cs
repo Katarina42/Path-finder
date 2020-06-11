@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,12 +28,36 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Game data
+
+    private uint level;
+    public uint Level
+    {
+        get { return level; }
+        set
+        {
+            if(value!=level)
+            {
+                level = value;
+                InitializeGame();
+            }
+        }
+    }
+
+    public GameObject playBtn;
+    public GameObject runBtn;
+
+    #endregion
+
     #region Unity
 
     private void Awake()
     {
         if (instance != null && instance != this)
+        {
             DestroyImmediate(this.gameObject);
+            return;
+        }
 
         instance = this;
 
@@ -40,6 +66,16 @@ public class GameManager : MonoBehaviour
         grid = new Point(10,10);
         enemy = new Point(9, 4);
         player = new Point(0, 4);
+
+        level = 0;
+        DataScreens.levelsData = new List<LevelData>();
+        SceneManager.sceneLoaded += LevelLoaded;
+    }
+
+    public void LevelLoaded(Scene scene,LoadSceneMode mode)
+    {
+        if(scene.name!="Menu")
+            Level++;
     }
 
     #endregion
@@ -53,9 +89,9 @@ public class GameManager : MonoBehaviour
 
     IEnumerator Initializing()
     {
-        yield return new WaitUntil(() => GameObject.FindGameObjectWithTag("Grid") != null);
+        yield return new WaitForSeconds(Time.deltaTime * 3);
         gridParent = GameObject.FindGameObjectWithTag("Grid");
-
+        SetButtons();
         SetGrid();
         SetPlayer();
         SetEnemy();
@@ -78,6 +114,20 @@ public class GameManager : MonoBehaviour
                 pathFinder.gridMatrix[i, j].visited = false;
             }
         }
+
+        SetBlocks();
+    }
+
+    private void SetBlocks()
+    {
+        for (int i = 0; i < level; i++)
+        {
+            int x = Random.Range(0, grid.x);
+            int y = Random.Range(0, grid.y);
+
+            pathFinder.gridMatrix[x, y].tile.GetComponent<Image>().color = Color.black;
+            pathFinder.gridMatrix[x, y].visited = true;
+        }
     }
 
     private void SetPlayer()
@@ -92,130 +142,36 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
-}
 
-public class PathFinder
-{
-    public Grid[,] gridMatrix;
-    private Queue<Point> que;
-    private int length;
+    #region Game Ui
 
-    public PathFinder(int m,int n)
+    private void SetButtons()
     {
-        gridMatrix = new Grid[m,n];
-        que = new Queue<Point>();
+        playBtn = GameObject.FindGameObjectWithTag("Play");
+        runBtn = GameObject.FindGameObjectWithTag("Run");
 
-        Point enemyPoint = FindShortestPath();
-        if (enemyPoint.x == -1)
-            Debug.Log("There is no path");
+        playBtn.GetComponent<Button>().onClick.AddListener(() => OnPlay());
+        runBtn.GetComponent<Button>().onClick.AddListener(() => OnRun());
+    }
+
+    public void OnPlay()
+    {
+        SceneManager.LoadScene("Grid");
+    }
+
+    public void OnRun()
+    {
+        if (pathFinder.FindPath())
+        {
+            runBtn.SetActive(false);
+            DataScreens.levelsData.Add(new LevelData(pathFinder.algorithamName, pathFinder.tilesChecked, pathFinder.timeSpent));
+        }
         else
         {
-            int counter = PrintPath(enemyPoint);
-
-            Debug.Log("Path length is " + counter);
-        }
-
+            SceneManager.LoadScene("Menu");
+        } 
     }
 
-    private int PrintPath(Point point)
-    {
-        if (gridMatrix[point.x,point.y].parent != null)
-        {
-            length++;
-            Debug.Log("" + point.x + "," + point.y);
-            PrintPath(gridMatrix[point.x, point.y].parent);
-        }
-
-        return length;
-    }
-
-    private Point FindShortestPath()
-    {
-        int x = GameManager.Instance.player.x;
-        int y = GameManager.Instance.player.y;
-
-        Point startPoint = new Point (x,y);
-        gridMatrix[x, y].parent = null;
-        que.Enqueue(startPoint);
-        gridMatrix[x,y].visited = true;
-
-        while(que.Count>0)
-        {
-            Point currentPoint = que.Dequeue();
-            x = currentPoint.x;
-            y = currentPoint.y;
-
-            //Debug.Log("Current " + x + ":" + y);
-
-            if (currentPoint.x == GameManager.Instance.enemy.x && currentPoint.y == GameManager.Instance.enemy.y)
-            {
-                return currentPoint;
-            }
-
-            //left
-            if(ValidPoint(x-1,y) && !gridMatrix[x-1, y].visited)
-            {
-                gridMatrix[x - 1, y].visited = true;
-                gridMatrix[x-1, y].parent = currentPoint;
-                Point point = new Point(x - 1, y);
-                que.Enqueue(point);
-            }
-
-            //right
-            if (ValidPoint(x+1, y) && !gridMatrix[x+1, y].visited)
-            {
-                gridMatrix[x + 1, y].visited = true;
-                gridMatrix[x+1, y].parent = currentPoint;
-                Point point = new Point(x + 1, y);
-                que.Enqueue(point);
-            }
-            //up
-            if (ValidPoint(x, y+1) && !gridMatrix[x, y +1].visited)
-            {
-                gridMatrix[x, y+1].visited = true;
-                gridMatrix[x, y+1].parent = currentPoint;
-                Point point = new Point(x, y + 1);
-                que.Enqueue(point);
-            }
-            //down
-            if (ValidPoint(x, y-1) && !gridMatrix[x, y - 1].visited)
-            {
-                gridMatrix[x , y-1].visited = true;
-                gridMatrix[x, y-1].parent = currentPoint;
-                Point point = new Point(x, y - 1);
-                que.Enqueue(point);
-            }
-
-        }
-
-        return new Point(-1, -1);
-    }
-
-    private bool ValidPoint(int x,int y)
-    {
-        if (x >= 0 && x < GameManager.Instance.grid.x && y >= 0 && y < GameManager.Instance.grid.y)
-            return true;
-
-        return false;
-    }
-
+    #endregion
 }
 
-public struct Grid
-{
-    public GameObject tile;
-    public bool visited;
-    public Point parent;
-}
-
-public class Point
-{
-    public int x;
-    public int y;
-
-    public Point(int x, int y )
-    {
-        this.x = x;
-        this.y = y;
-    }
-}
