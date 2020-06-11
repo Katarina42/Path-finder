@@ -5,6 +5,7 @@ using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UiManager : MonoBehaviour
 {
@@ -21,9 +22,13 @@ public class UiManager : MonoBehaviour
     public TMP_InputField enemyXText;
     public TMP_InputField enemyYText;
 
+    [Header("Automatic run")]
+    public Toggle automaticRunToggle;
+
     public void OnPlay()
     {
         ParseTextInput();
+        GameManager.Instance.auto = automaticRunToggle.isOn;
         SceneManager.LoadScene("Grid");
     }
 

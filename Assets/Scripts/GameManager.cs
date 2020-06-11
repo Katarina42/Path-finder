@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
 
     public Point grid;
     public Point player;
+    private Point playerCurrent;
     public Point enemy;
 
     private GameObject gridParent;
@@ -47,6 +48,10 @@ public class GameManager : MonoBehaviour
     public GameObject playBtn;
     public GameObject runBtn;
 
+    public Stack<Point> playerPath = new Stack<Point>();
+
+    public bool auto;
+
     #endregion
 
     #region Unity
@@ -66,6 +71,7 @@ public class GameManager : MonoBehaviour
         grid = new Point(10,10);
         enemy = new Point(9, 4);
         player = new Point(0, 4);
+        playerCurrent = new Point(0, 4); 
 
         level = 0;
         DataScreens.levelsData = new List<LevelData>();
@@ -95,6 +101,9 @@ public class GameManager : MonoBehaviour
         SetGrid();
         SetPlayer();
         SetEnemy();
+
+        if (auto)
+            OnRun();
     }
 
     private void SetGrid()
@@ -151,12 +160,17 @@ public class GameManager : MonoBehaviour
         runBtn = GameObject.FindGameObjectWithTag("Run");
 
         playBtn.GetComponent<Button>().onClick.AddListener(() => OnPlay());
-        runBtn.GetComponent<Button>().onClick.AddListener(() => OnRun());
+
+        if (auto)
+            runBtn.SetActive(false);
+        else
+            runBtn.GetComponent<Button>().onClick.AddListener(() => OnRun());
     }
 
     public void OnPlay()
     {
-        SceneManager.LoadScene("Grid");
+        if (playerCurrent.x == enemy.x && playerCurrent.y == enemy.y) ;
+            SceneManager.LoadScene("Grid");
     }
 
     public void OnRun()
@@ -165,11 +179,44 @@ public class GameManager : MonoBehaviour
         {
             runBtn.SetActive(false);
             DataScreens.levelsData.Add(new LevelData(pathFinder.algorithamName, pathFinder.tilesChecked, pathFinder.timeSpent));
+            MovePlayer();
         }
         else
         {
             SceneManager.LoadScene("Menu");
         } 
+    }
+
+    #endregion
+
+    #region Player movement
+
+    private void MovePlayer()
+    {
+        playerCurrent.x = player.x;
+        playerCurrent.y = player.y;
+        StartCoroutine(Move());
+    }
+
+    IEnumerator Move()
+    {
+        GameObject playerObj = pathFinder.gridMatrix[playerCurrent.x, playerCurrent.y].tile.transform.GetChild(0).gameObject;
+        float currTime = 0;
+        Point currPos = playerPath.Pop();
+        Transform endPos = pathFinder.gridMatrix[currPos.x, currPos.y].tile.transform;
+        while(currTime < 1 && playerObj!=null)
+        {
+            playerObj.transform.SetParent(pathFinder.gridMatrix[currPos.x, currPos.y].tile.transform);
+            playerCurrent.x = currPos.x;
+            playerCurrent.y = currPos.y;
+            playerObj.transform.position = Vector3.Lerp(playerObj.transform.position, endPos.position, Time.deltaTime*5);
+            currTime += Time.deltaTime*5;
+            yield return null;
+        }
+
+        if (playerPath.Count > 0)
+            StartCoroutine(Move());
+
     }
 
     #endregion

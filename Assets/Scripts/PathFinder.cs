@@ -39,10 +39,12 @@ public class PathFinder
 
     private int PrintPath(Point point)
     {
+        GameManager.Instance.playerPath.Push(point);
+
         if (gridMatrix[point.x, point.y].parent != null)
         {
             length++;
-            Debug.Log("" + point.x + "," + point.y);
+            //Debug.Log("" + point.x + "," + point.y);
             PrintPath(gridMatrix[point.x, point.y].parent);
         }
 
