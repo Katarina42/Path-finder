@@ -34,11 +34,17 @@ public class UiManager : MonoBehaviour
 
     private void ParseTextInput()
     {
-        int.TryParse(gridXText.text, out GameManager.Instance.grid.x);
-        int.TryParse(gridYText.text, out GameManager.Instance.grid.y);
-        int.TryParse(playerXText.text, out GameManager.Instance.player.x);
-        int.TryParse(playerYText.text, out GameManager.Instance.player.y);
-        int.TryParse(enemyXText.text, out GameManager.Instance.enemy.x);
-        int.TryParse(enemyYText.text, out GameManager.Instance.enemy.y);
+        if(!gridXText.text.Equals(""))
+            int.TryParse(gridXText.text, out GameManager.Instance.grid.x);
+        if (!gridYText.text.Equals(""))
+            int.TryParse(gridYText.text, out GameManager.Instance.grid.y);
+        if (!playerXText.text.Equals(""))
+            int.TryParse(playerXText.text, out GameManager.Instance.player.x);
+        if (!playerYText.text.Equals(""))
+            int.TryParse(playerYText.text, out GameManager.Instance.player.y);
+        if (!enemyXText.text.Equals(""))
+            int.TryParse(enemyXText.text, out GameManager.Instance.enemy.x);
+        if (!enemyYText.text.Equals(""))
+            int.TryParse(enemyYText.text, out GameManager.Instance.enemy.y);
     }
 }

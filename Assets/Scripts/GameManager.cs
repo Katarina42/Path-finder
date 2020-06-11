@@ -15,6 +15,8 @@ public class GameManager : MonoBehaviour
     #region Setup data
 
     private const float TILE_SIZE = 100;
+    private const float PLAYER_SPEED = 5;
+
     public GameObject gridTilePrefab;
     public GameObject playerPrefab;
     public GameObject enemyPrefab;
@@ -209,8 +211,8 @@ public class GameManager : MonoBehaviour
             playerObj.transform.SetParent(pathFinder.gridMatrix[currPos.x, currPos.y].tile.transform);
             playerCurrent.x = currPos.x;
             playerCurrent.y = currPos.y;
-            playerObj.transform.position = Vector3.Lerp(playerObj.transform.position, endPos.position, Time.deltaTime*5);
-            currTime += Time.deltaTime*5;
+            playerObj.transform.position = Vector3.Lerp(playerObj.transform.position, endPos.position, Time.deltaTime*PLAYER_SPEED);
+            currTime += Time.deltaTime*PLAYER_SPEED;
             yield return null;
         }
 
